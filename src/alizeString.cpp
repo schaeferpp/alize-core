@@ -132,7 +132,15 @@ double S::toDouble() const
 {
   // return atof(_string);
   double v;
-  std::istringstream stream(_string);
+  char *start;
+
+  // Be able to recognize escaped cmdline parameters to support negative numbers on command line
+  if (_string[0] == '\'') {
+      start = &_string[1];
+  } else {
+      start = _string;
+  }
+  std::istringstream stream(start);
   stream >> v;
   if (stream.fail())
     throw Exception("cannot convert '" + *this
@@ -154,7 +162,15 @@ bool S::toBool() const
 long S::toLong() const
 {
   long v;
-  std::istringstream stream(_string);
+  char *start;
+
+  // Be able to recognize escaped cmdline parameters to support negative numbers on command line
+  if (_string[0] == '\'') {
+      start = &_string[1];
+  } else {
+      start = _string;
+  }
+  std::istringstream stream(start);
   stream >> v;
   if (stream.fail())
     throw Exception("cannot convert '" + *this
