@@ -124,6 +124,7 @@ namespace alize
       bool operator==(const Exception&) const;   /*!Not implemented*/
       bool operator!=(const Exception& e) const;   /*!Not implemented*/
       const Exception& operator=(const Exception&);/*!Not implemented*/
+      char trace_buffer[4096];
   };
 
   //---------------------------------------------------------------------

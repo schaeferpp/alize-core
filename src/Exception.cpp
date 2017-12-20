@@ -65,23 +65,30 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 using namespace alize;
 
 static void
-backtrace_handler(void)
+backtrace_handler(char *trace_buffer)
 {
+    int gdb_pipe[2];
     char pid_buf[30];
     sprintf(pid_buf, "%d", getpid());
     char name_buf[512];
     name_buf[readlink("/proc/self/exe", name_buf, 511)] = 0;
+    pipe(gdb_pipe);
     int child_pid = fork();
     if (!child_pid)
     {
-        dup2(2, 1); // redirect output to stderr
-        fprintf(stdout, "stack trace for %s pid=%s\n", name_buf, pid_buf);
+        close(gdb_pipe[0]);
+        dup2(gdb_pipe[1], 1); // redirect output to stderr
+        dup2(gdb_pipe[1], 2); // redirect stderr to pipe
+        close(gdb_pipe[1]);
+        //fprintf(stdout, "stack trace for %s pid=%s\n", name_buf, pid_buf);
         execlp("gdb", "gdb", "--batch", "-n", "-ex", "thread", "-ex", "bt",
                name_buf, pid_buf, NULL);
         abort(); /* If gdb failed to start */
     }
     else
     {
+        close(gdb_pipe[1]);
+        read(gdb_pipe[0], trace_buffer, 4096);
         waitpid(child_pid, NULL, 0);
     }
 }
@@ -89,8 +96,9 @@ backtrace_handler(void)
 //-------------------------------------------------------------------------
 Exception::Exception(const String& msg, const String& sourceFile, int line)
 :Object(), msg(msg), sourceFile(sourceFile), line(line) {
-    backtrace_handler();
+    backtrace_handler(trace_buffer);
 }
+
 //-------------------------------------------------------------------------
 Exception::Exception(const Exception& e)
 :Object(),msg(e.msg),sourceFile(e.sourceFile),line(e.line) {
@@ -101,7 +109,8 @@ String Exception::toString() const
   return Object::toString()
     + "\n  message   = \"" + msg + "\""
     + "\n  source file = " + sourceFile
-    + "\n  line number = " + String::valueOf(line);
+    + "\n  line number = " + String::valueOf(line)
+    + "\n" + trace_buffer;
 }
 //-------------------------------------------------------------------------
 String Exception::getClassName() const { return "Exception"; }
