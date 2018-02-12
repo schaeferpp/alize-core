@@ -67,6 +67,7 @@
 
 #include "Object.h"
 #include "alizeString.h"
+#include "backward.hpp"
 
 namespace alize
 {
@@ -124,7 +125,7 @@ namespace alize
       bool operator==(const Exception&) const;   /*!Not implemented*/
       bool operator!=(const Exception& e) const;   /*!Not implemented*/
       const Exception& operator=(const Exception&);/*!Not implemented*/
-      char trace_buffer[4096];
+      backward::StackTrace st;
   };
 
   //---------------------------------------------------------------------
