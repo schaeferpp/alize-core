@@ -22,6 +22,18 @@ else
 	AC_SUBST(DEBUG,"")
 fi
 
+AC_ARG_ENABLE(stacktrace,
+              [  --enable-stacktrace enable backward.hpp stacktrace (will probably only work on linux [[default=yes]] ]
+              enable_stacktrace=$enableval, enable_stacktrace=yes)
+#Enable stacktrace
+if test "$enable_stacktrace" = "yes"; then
+    AC_MSG_NOTICE("Stacktrace enabled")
+    CPPFLAGS="$CPPFLAGS -DBACKWARD_HAS_BFD=1"
+    LIBS="$LIBS -lbfd -ldl"
+else
+    AC_MSG_NOTICE("Stacktrace disabled")
+fi
+
 
 #AC_ARG_ENABLE(lenfence, 
 #		[ --enable-debug	compile with debug information [default=no]], 
